@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Library Seat Booking System</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+header {
+    background: #172554;
+    color: white;
+    text-align: center;
+    padding: 25px;
+}
+
+header h1 {
+    margin-bottom: 8px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 30px auto;
+}
+
+section {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
+
+h2 {
+    color: #172554;
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin: 15px 0 8px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+}
+
+.legend {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    align-items: center;
+    font-size: 14px;
+}
+
+.legend span {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+.available-box { background: #22c55e; }
+.selected-box { background: #2563eb; }
+.booked-box { background: #ef4444; }
+
+.seat-map {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.seat {
+    padding: 18px 5px;
+    border: none;
+    border-radius: 8px;
+    background: #22c55e;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.seat.selected {
+    background: #2563eb;
+}
+
+.seat.booked {
+    background: #ef4444;
+    cursor: not-allowed;
+}
+
+#selectedSeat {
+    margin: 18px 0;
+    font-weight: bold;
+}
+
+.book-action {
+    width: 100%;
+    padding: 14px;
+    background: #172554;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.book-action:hover {
+    background: #2563eb;
+}
+
+.booking-item {
+    padding: 15px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.cancel {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+footer {
+    background: #172554;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+@media(max-width: 500px) {
+    .seat-map {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Library Management  System</h1>
+    <p>Reserve Your Perfect Study Space</p>
+</header>
+
+<div class="container">
+
+    <section>
+        <h2>Welcome to the Library</h2>
+        <p>Choose your seat and book your study time.</p>
+    </section>
+
+    <section>
+        <h2>Book Your Seat</h2>
+
+        <label>Student Name</label>
+        <input type="text" id="studentName"
+        placeholder="Enter your name">
+
+        <label>Select Time Slot</label>
+        <select id="timeSlot">
+            <option value="09:00 AM">9 AM - 10 AM</option>
+            <option value="10:00 AM">10 AM - 11 AM</option>
+            <option value="11:00 AM">11 AM - 12 PM</option>
+            <option value="12:00 PM">12 PM - 1 PM</option>
+        </select>
+
+        <h3 style="margin-top:20px">Select Your Seat</h3>
+
+        <div class="legend">
+            <span class="available-box"></span> Available
+            <span class="selected-box"></span> Selected
+            <span class="booked-box"></span> Booked
+        </div>
+
+        <div id="seatMap" class="seat-map"></div>
+
+        <p id="selectedSeat">No seat selected</p>
+
+        <button class="book-action" onclick="bookSeat()">
+            Book Seat
+        </button>
+
+        <p id="message"></p>
+    </section>
+
+    <section>
+        <h2>My Bookings</h2>
+        <div id="bookingList">No bookings yet.</div>
+    </section>
+
+</div>
+
+<footer>
+    <p>Library Seat & Resource Booking System</p>
+</footer>
+
+<script>
+let selectedSeat = null;
+let bookings = [];
+
+function displaySeats() {
+    let seatMap = document.getElementById("seatMap");
+    seatMap.innerHTML = "";
+
+    for (let i = 1; i <= 20; i++) {
+        let button = document.createElement("button");
+
+        button.innerText = "Seat " + i;
+        button.className = "seat";
+
+        let isBooked = bookings.some(b => b.seat === i);
+
+        if (isBooked) {
+            button.classList.add("booked");
+            button.disabled = true;
+        }
+
+        if (selectedSeat === i) {
+            button.classList.add("selected");
+        }
+
+        button.onclick = function() {
+            selectedSeat = i;
+
+            document.getElementById("selectedSeat").innerText =
+                "Selected Seat: " + i;
+
+            displaySeats();
+        };
+
+        seatMap.appendChild(button);
+    }
+}
+
+function bookSeat() {
+    let name = document.getElementById("studentName").value.trim();
+    let time = document.getElementById("timeSlot").value;
+    let message = document.getElementById("message");
+
+    if (name === "") {
+        message.innerText = "Please enter your name!";
+        message.style.color = "red";
+        return;
+    }
+
+    if (selectedSeat === null) {
+        message.innerText = "Please select a seat!";
+        message.style.color = "red";
+        return;
+    }
+
+    if (bookings.some(b => b.seat === selectedSeat)) {
+        message.innerText = "Seat already booked!";
+        message.style.color = "red";
+        return;
+    }
+
+    bookings.push({
+        name: name,
+        seat: selectedSeat,
+        time: time
+    });
+
+    message.innerText = "Seat booked successfully!";
+    message.style.color = "green";
+
+    selectedSeat = null;
+
+    document.getElementById("selectedSeat").innerText =
+        "No seat selected";
+
+    displaySeats();
+    displayBookings();
+}
+
+function displayBookings() {
+    let list = document.getElementById("bookingList");
+
+    if (bookings.length === 0) {
+        list.innerHTML = "No bookings yet.";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    bookings.forEach(function(booking, index) {
+        let item = document.createElement("div");
+        item.className = "booking-item";
+
+        let details = document.createElement("p");
+
+        details.innerText =
+            "Student: " + booking.name +
+            " | Seat: " + booking.seat +
+            " | Time: " + booking.time;
+
+        let cancelButton = document.createElement("button");
+        cancelButton.innerText = "Cancel Booking";
+        cancelButton.className = "cancel";
+
+        cancelButton.onclick = function() {
+            bookings.splice(index, 1);
+            displaySeats();
+            displayBookings();
+
+            document.getElementById("message").innerText =
+                "Booking cancelled successfully!";
+        };
+
+        item.appendChild(details);
+        item.appendChild(cancelButton);
+        list.appendChild(item);
+    });
+}
+
+displaySeats();
+</script>
+
+</body>
+</html>
